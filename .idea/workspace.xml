@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4c24417a-c9dd-4074-856a-1ba2567aa164" name="Default" comment="" />
-    <list id="7785f77b-2f41-4562-9a82-2f679be71e9d" name="Non Commit" comment="Not to be committed">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../target/SparkServer-jar-with-dependencies.jar" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../target/SparkServer.jar" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../target/classes/com/mk/Controller$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../target/classes/com/mk/Controller.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../target/classes/com/mk/FileUtils.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../target/maven-archiver/pom.properties" afterPath="" />
+    <list default="true" id="4c24417a-c9dd-4074-856a-1ba2567aa164" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/mk/vo/DigikeyProductInfo.java" afterPath="$PROJECT_DIR$/src/main/java/com/mk/vo/DigikeyProductInfo.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
+    <list id="7785f77b-2f41-4562-9a82-2f679be71e9d" name="Non Commit" comment="Not to be committed" />
     <ignored path="SparkS.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -157,7 +154,7 @@
         <option value="Margish" />
       </list>
     </option>
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GradleLocalSettings">
     <option name="externalProjectsViewState">
@@ -781,7 +778,7 @@
       <workItem from="1436649098355" duration="20594000" />
       <workItem from="1436706078411" duration="3008000" />
       <workItem from="1436713589843" duration="6000" />
-      <workItem from="1436714386592" duration="645000" />
+      <workItem from="1436714386592" duration="846000" />
     </task>
     <task id="LOCAL-00001" summary="Updated on July 12, 2015">
       <created>1436714546181</created>
@@ -799,11 +796,11 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="172369000" />
+    <option name="totallyTimeSpent" value="172570000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -886,7 +883,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/mk/vo/DigikeyProductInfo.java</url>
-          <line>287</line>
+          <line>286</line>
           <properties />
           <option name="timeStamp" value="512" />
         </line-breakpoint>

@@ -278,7 +278,6 @@ public class DigikeyProductInfo {
                     break;
                 }
             }
-
             PriceBreaker finalPrice;
             if (nextPrice == null) {
                 finalPrice = bestCutPrice;
