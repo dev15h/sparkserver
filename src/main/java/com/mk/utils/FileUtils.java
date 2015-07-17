@@ -8,6 +8,7 @@ import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellReference;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,6 +21,11 @@ import java.util.*;
  * Created by margish on 5/23/15.
  */
 public class FileUtils {
+    private static final int QUANTITY_COL_INDEX = 3;
+    private static final int TOTAL_QTY_COL_INDEX = 5;
+    private static final int DIGIKEY_PRICE_COL_INDEX = 5;
+    private static final int TOTAL_PRICE_COL_INDEX = 10;
+
     public static String getCSVFromExcel(String fileName){
         StringBuilder csv = new StringBuilder();
         FileInputStream file = null;
@@ -38,6 +44,8 @@ public class FileUtils {
             int rowStart = sheet.getFirstRowNum();
             for (int rowNum = rowStart; rowNum <= rowEnd; rowNum++) {
                 Row row = sheet.getRow(rowNum);
+                if (row == null)
+                    continue;
                 int lastColumn = row.getLastCellNum();
                 //For each row, iterate through each columns
                 //Iterator<Cell> cellIterator = row.cellIterator();
@@ -97,92 +105,6 @@ public class FileUtils {
 
 
         return "xxxxx" +  csv.toString();
-    }
-
-    public static Map<String, Object> getTableDataFromExcel(File file){
-        Vector tableRows = new Vector();
-        FileInputStream fileInputStream = null;
-        int maxCol = 0;
-        try {
-            fileInputStream = new FileInputStream(file);
-            //Get the workbook instance for XLS file
-            Workbook workbook = WorkbookFactory.create(fileInputStream);
-
-            //Get first sheet from the workbook
-            Sheet sheet = workbook.getSheetAt(0);
-
-
-            //Iterate through each rows from first sheet
-            //Iterator<Row> rowIterator = sheet.iterator();
-            //while(rowIterator.hasNext()) {
-            int rowEnd = sheet.getLastRowNum();
-            int rowStart = sheet.getFirstRowNum();
-            for (int rowNum = rowStart; rowNum < rowEnd; rowNum++) {
-                Row row = sheet.getRow(rowNum);
-                Vector rowVector = new Vector();
-                int lastColumn = row.getLastCellNum();
-                maxCol = (maxCol < lastColumn)? lastColumn:maxCol;
-                //For each row, iterate through each columns
-                //Iterator<Cell> cellIterator = row.cellIterator();
-                //while(cellIterator.hasNext()) {
-
-                int cols = 0;
-                for (int cn = 0; cn < lastColumn; cn++) {
-                    Cell cell = row.getCell(cn, Row.RETURN_BLANK_AS_NULL);
-
-                    //Cell cell = cellIterator.next();
-
-
-                    if (cell == null) {
-                        rowVector.add("");
-                        System.out.print(" \t");
-                    } else {
-                        switch (cell.getCellType()) {
-                            case Cell.CELL_TYPE_BLANK:
-                                rowVector.add("");
-                                System.out.print(" \t");
-                                break;
-                            case Cell.CELL_TYPE_BOOLEAN:
-                                rowVector.add(cell.getBooleanCellValue());
-                                System.out.print(cell.getBooleanCellValue() + "\t");
-                                break;
-                            case Cell.CELL_TYPE_NUMERIC:
-                                double num = cell.getNumericCellValue();
-                                if ("0".equals(Double.valueOf(num).toString().split("\\.")[1])) {
-                                    rowVector.add(Double.valueOf(num).toString().split("\\.")[0]);
-                                } else {
-                                    rowVector.add(cell.getNumericCellValue());
-                                }
-                                System.out.print(cell.getNumericCellValue() + "\t");
-                                break;
-                            case Cell.CELL_TYPE_STRING:
-                                rowVector.add(cell.getStringCellValue());
-                                System.out.print(cell.getStringCellValue() + "\t");
-                                break;
-                        }
-                    }
-                }
-
-                tableRows.add(rowVector);
-                System.out.println("");
-            }
-            fileInputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Vector columnHeaders = new Vector();
-        for (int i = 1; i < maxCol+1; i++) {
-            columnHeaders.add(i);
-        }
-
-        Map<String, Object> tableData = new HashMap<String, Object>();
-
-        tableData.put("headers", columnHeaders);
-        tableData.put("rows", tableRows);
-
-
-        return tableData;
     }
 
     public static String generateDataForExcel(List<InputRow> inputRows, List<Integer> qty) {
@@ -432,10 +354,189 @@ public class FileUtils {
                 cell.setCellValue(excelRow.getRohs());
 
             }
-        }
+
+            addCostCalculations(sheet, rowIndex, qty);
+
+        }//Lot Qty Loop
 
 
         return workbook;
+    }
+
+    private static void addCostCalculations(Sheet sheet, int rowIndex, Integer lotQty) {
+        Font totalFont = sheet.getWorkbook().createFont();
+
+        CellStyle sumTextCellStyle = sheet.getWorkbook().createCellStyle();
+        totalFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
+        sumTextCellStyle.setBorderBottom(CellStyle.BORDER_THIN);
+        sumTextCellStyle.setBorderTop(CellStyle.BORDER_THIN);
+        sumTextCellStyle.setBorderLeft(CellStyle.BORDER_THIN);
+        sumTextCellStyle.setFont(totalFont);
+
+        CellStyle sumFormulaCellStyle = sheet.getWorkbook().createCellStyle();
+        sumFormulaCellStyle.setBorderBottom(CellStyle.BORDER_THIN);
+        sumFormulaCellStyle.setBorderTop(CellStyle.BORDER_THIN);
+        sumFormulaCellStyle.setBorderRight(CellStyle.BORDER_THIN);
+        sumFormulaCellStyle.setFont(totalFont);
+
+        CellStyle yellowHighlightCellStyle = sheet.getWorkbook().createCellStyle();
+        yellowHighlightCellStyle.setBorderBottom(CellStyle.BORDER_THIN);
+        yellowHighlightCellStyle.setBorderTop(CellStyle.BORDER_THIN);
+        yellowHighlightCellStyle.setBorderRight(CellStyle.BORDER_THIN);
+        yellowHighlightCellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        yellowHighlightCellStyle.setFillForegroundColor(HSSFColor.YELLOW.index);
+        yellowHighlightCellStyle.setFont(totalFont);
+
+        CellStyle greenHighlightCellStyle = sheet.getWorkbook().createCellStyle();
+        greenHighlightCellStyle.setBorderBottom(CellStyle.BORDER_THIN);
+        greenHighlightCellStyle.setBorderTop(CellStyle.BORDER_THIN);
+        greenHighlightCellStyle.setBorderRight(CellStyle.BORDER_THIN);
+        greenHighlightCellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        greenHighlightCellStyle.setFillForegroundColor(HSSFColor.LIGHT_GREEN.index);
+        greenHighlightCellStyle.setFont(totalFont);
+
+        Row sumRow = sheet.createRow(rowIndex + 1);
+        Cell totalQtyCell = sumRow.createCell(QUANTITY_COL_INDEX - 1);
+        totalQtyCell.setCellStyle(sumTextCellStyle);
+        totalQtyCell.setCellValue("Total Qty");
+        
+        Cell qtyTotalCell = sumRow.createCell(QUANTITY_COL_INDEX);
+        qtyTotalCell.setCellStyle(sumFormulaCellStyle);
+        qtyTotalCell.setCellType(Cell.CELL_TYPE_FORMULA);
+        String qtySumFormula = getSumFormula(1, rowIndex - 1, QUANTITY_COL_INDEX - 1);
+        qtyTotalCell.setCellFormula(qtySumFormula);
+
+        Cell totalTextCell = sumRow.createCell(TOTAL_PRICE_COL_INDEX - 1);
+        totalTextCell.setCellStyle(sumTextCellStyle);
+        totalTextCell.setCellValue("Total Part Cost");
+
+        Cell totalSumCell = sumRow.createCell(TOTAL_PRICE_COL_INDEX);
+        totalSumCell.setCellStyle(sumFormulaCellStyle);
+        totalSumCell.setCellType(Cell.CELL_TYPE_FORMULA);
+        String totalSumFormula = getSumFormula(1, rowIndex - 1, TOTAL_PRICE_COL_INDEX - 1);
+        totalSumCell.setCellFormula(totalSumFormula);
+
+        rowIndex += 2;
+
+        Row markupRow = sheet.createRow(rowIndex);
+
+        //mark up
+        Cell markupPercentTextCell = markupRow.createCell(TOTAL_QTY_COL_INDEX - 1);
+        markupPercentTextCell.setCellStyle(sumTextCellStyle);
+        markupPercentTextCell.setCellValue("Markup");
+
+        Cell markupPercentCell = markupRow.createCell(DIGIKEY_PRICE_COL_INDEX);
+        markupPercentCell.setCellStyle(yellowHighlightCellStyle);
+        markupPercentCell.setCellType(Cell.CELL_TYPE_FORMULA);
+        markupPercentCell.setCellFormula("20%");
+
+        Cell markupCostTextCell = markupRow.createCell(TOTAL_PRICE_COL_INDEX - 1);
+        markupCostTextCell.setCellStyle(sumTextCellStyle);
+        markupCostTextCell.setCellValue("Parts cost with Markup");
+
+        Cell markupCostCell = markupRow.createCell(TOTAL_PRICE_COL_INDEX);
+        markupCostCell.setCellStyle(sumFormulaCellStyle);
+        markupCostCell.setCellType(Cell.CELL_TYPE_FORMULA);
+        String markupSumFormula = getCellRef(totalSumCell) + "*(1+" + getCellRef(markupPercentCell) + ")";
+        markupCostCell.setCellFormula(markupSumFormula);
+        
+
+        rowIndex++;
+        //labor cent
+        Row laborCentRow = sheet.createRow(rowIndex);
+
+        Cell laborCentTextCell = laborCentRow.createCell(TOTAL_QTY_COL_INDEX - 1);
+        laborCentTextCell.setCellStyle(sumTextCellStyle);
+        laborCentTextCell.setCellValue("Labor Cents Each");
+
+        Cell laborCentCell = laborCentRow.createCell(DIGIKEY_PRICE_COL_INDEX);
+        laborCentCell.setCellStyle(yellowHighlightCellStyle);
+        laborCentCell.setCellType(Cell.CELL_TYPE_NUMERIC);
+        laborCentCell.setCellValue(0.15);
+
+
+        //unit part cost
+        Cell unitPartCostTextCell = laborCentRow.createCell(TOTAL_PRICE_COL_INDEX - 1);
+        unitPartCostTextCell.setCellStyle(sumTextCellStyle);
+        unitPartCostTextCell.setCellValue("Unit Part Cost");
+
+        Cell unitPartCostCell = laborCentRow.createCell(TOTAL_PRICE_COL_INDEX);
+        unitPartCostCell.setCellStyle(sumFormulaCellStyle);
+        unitPartCostCell.setCellType(Cell.CELL_TYPE_FORMULA);
+        String unitPartSumFormula = getCellRef(markupCostCell) + "/" + lotQty ;
+        unitPartCostCell.setCellFormula(unitPartSumFormula);
+
+
+        rowIndex++;
+        Row pcbCostRow = sheet.createRow(rowIndex);
+
+        //pcb cost
+        Cell pcbCostTextCell = pcbCostRow.createCell(TOTAL_QTY_COL_INDEX - 1);
+        pcbCostTextCell.setCellStyle(sumTextCellStyle);
+        pcbCostTextCell.setCellValue("PCB Cost");
+
+        Cell pcbCostCell = pcbCostRow.createCell(DIGIKEY_PRICE_COL_INDEX);
+        pcbCostCell.setCellStyle(yellowHighlightCellStyle);
+        pcbCostCell.setCellType(Cell.CELL_TYPE_NUMERIC);
+        pcbCostCell.setCellValue(5);
+
+
+        //unit labor cost
+        Cell unitLaborCostTextCell = pcbCostRow.createCell(TOTAL_PRICE_COL_INDEX - 1);
+        unitLaborCostTextCell.setCellStyle(sumTextCellStyle);
+        unitLaborCostTextCell.setCellValue("Unit Labor Cost");
+
+        Cell unitLaborCostCell = pcbCostRow.createCell(TOTAL_PRICE_COL_INDEX);
+        unitLaborCostCell.setCellStyle(sumFormulaCellStyle);
+        unitLaborCostCell.setCellType(Cell.CELL_TYPE_FORMULA);
+        String unitLaborSumFormula = getCellRef(qtyTotalCell) + "*" + getCellRef(laborCentCell) ;
+        unitLaborCostCell.setCellFormula(unitLaborSumFormula);
+
+        //pcb cost 2
+        rowIndex++;
+        Row pcbCostRow2 = sheet.createRow(rowIndex);
+
+        //unit labor cost
+        Cell pcbCost2TextCell = pcbCostRow2.createCell(TOTAL_PRICE_COL_INDEX - 1);
+        pcbCost2TextCell.setCellStyle(sumTextCellStyle);
+        pcbCost2TextCell.setCellValue("PCB Cost");
+
+        Cell pcbCost2Cell = pcbCostRow2.createCell(TOTAL_PRICE_COL_INDEX);
+        pcbCost2Cell.setCellStyle(sumFormulaCellStyle);
+        pcbCost2Cell.setCellType(Cell.CELL_TYPE_FORMULA);
+        String pcbCostFormula = getCellRef(pcbCostCell);
+        pcbCost2Cell.setCellFormula(pcbCostFormula);
+
+        //total cost each
+        rowIndex++;
+        Row totalCostEachRow = sheet.createRow(rowIndex);
+
+        //unit labor cost
+        Cell totalCostEach2TextCell = totalCostEachRow.createCell(TOTAL_PRICE_COL_INDEX - 1);
+        totalCostEach2TextCell.setCellStyle(sumTextCellStyle);
+        totalCostEach2TextCell.setCellValue("Total Cost Each");
+
+        Cell totalCostEach2Cell = totalCostEachRow.createCell(TOTAL_PRICE_COL_INDEX);
+        totalCostEach2Cell.setCellStyle(greenHighlightCellStyle);
+        totalCostEach2Cell.setCellType(Cell.CELL_TYPE_FORMULA);
+        String totalCostEachFormula = getCellRef(unitPartCostCell) + "+" + getCellRef(unitLaborCostCell) + "+" + getCellRef(pcbCost2Cell);
+        totalCostEach2Cell.setCellFormula(totalCostEachFormula);
+
+
+
+
+
+    }
+
+    private static String getSumFormula(int firstRowIndex, int lastRowIndex, int colIndex) {
+        String firstCellRef = CellReference.convertNumToColString(colIndex + 1) + (firstRowIndex + 1);
+        String lastCellRef = CellReference.convertNumToColString(colIndex + 1) + (lastRowIndex + 1);
+        String sumFormula = "SUM(" + firstCellRef + ":" + lastCellRef + ")";
+        return sumFormula;
+    }
+
+    private static String getCellRef(Cell cell){
+        return CellReference.convertNumToColString(cell.getColumnIndex()) + (cell.getRowIndex() + 1);
     }
 
     private static CellStyle getGreenHighLightCellStyle(Workbook workbook) {
