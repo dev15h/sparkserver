@@ -103,7 +103,9 @@ public class MouserProductInfo {
                     return nextPrice;
                 }
             }
-            return bestCutPrice;
+            PriceBreaker returnBreaker = bestCutPrice;
+            returnBreaker.setQty((returnBreaker.getQty() > totalQty)?returnBreaker.getQty():totalQty);
+            return returnBreaker;
         }
 
         while (remaining >= minReelQty) {

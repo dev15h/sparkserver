@@ -97,7 +97,7 @@ public class MouserExtractor {
         }
 
         if (mouserProductInfo.getPriceBreakers() == null || mouserProductInfo.getPriceBreakers().isEmpty()) {
-            List<PriceBreaker> priceBreakers = mouserPriceBreaker();
+            List<PriceBreaker> priceBreakers = mouserPriceBreaker(mouserProductInfo.getPkging());
             mouserProductInfo.setPriceBreakers(priceBreakers);
         }
 
@@ -107,7 +107,7 @@ public class MouserExtractor {
 
 
 
-    private List<PriceBreaker> mouserPriceBreaker() {
+    private List<PriceBreaker> mouserPriceBreaker(String pckging) {
         List<PriceBreaker> priceBreakerList = new ArrayList<PriceBreaker>();
         if (document == null)
             return priceBreakerList;
@@ -130,7 +130,7 @@ public class MouserExtractor {
             Double price = 0.0;
             if (priceBrkElement.toString().contains("PriceBreakQuantity")) {
                 if (pkgType.equals("")) {
-                    pkgType = CUT_TAPE;
+                    pkgType = pckging;
                 }
                 if (pkgType.equals(CUT_TAPE)) {
                     try {
@@ -138,8 +138,12 @@ public class MouserExtractor {
                         qty = Integer.parseInt(qtyStr);
 
                         String priceStr = priceBrkElement.child(2).childNode(1).childNode(0).outerHtml().replace("$", "");
-                        price = Double.parseDouble(priceStr);
-                        cutTapePriceList.add(new PriceBreaker(qty, price, null, CUT_TAPE.replace(">", "").replace("<", ""), null));
+                        try {
+                            price = Double.parseDouble(priceStr);
+                            cutTapePriceList.add(new PriceBreaker(qty, price, null, CUT_TAPE.replace(">", "").replace("<", ""), null));
+                        } catch (NumberFormatException nfe) {
+                            cutTapePriceList.add(new PriceBreaker(qty, price, null, CUT_TAPE.replace(">", "").replace("<", ""), priceBrkElement.child(2).childNode(1).childNode(0).childNode(0).outerHtml()));
+                        }
                     } catch (Exception e) {
                         System.out.println(priceBrkElement);
                     }
@@ -154,6 +158,21 @@ public class MouserExtractor {
                             reelPriceList.add(new PriceBreaker(qty, price, null, FULL_REEL.replace(">", "").replace("<", ""), null));
                         } catch (NumberFormatException nfe) {
                             reelPriceList.add(new PriceBreaker(qty, price, null, FULL_REEL.replace(">", "").replace("<", ""), priceBrkElement.child(2).childNode(1).childNode(0).childNode(0).outerHtml()));
+                        }
+                    } catch (Exception e) {
+                        System.out.println(priceBrkElement);
+                    }
+                } else if (pkgType.equals(pckging)){
+                    try {
+                        String qtyStr = priceBrkElement.child(1).childNode(1).childNode(0).outerHtml().replace(",", "");
+                        qty = Integer.parseInt(qtyStr);
+
+                        String priceStr = priceBrkElement.child(2).childNode(1).childNode(0).outerHtml().replace("$", "");
+                        try {
+                            price = Double.parseDouble(priceStr);
+                            cutTapePriceList.add(new PriceBreaker(qty, price, null, pckging, null));
+                        } catch (NumberFormatException nfe) {
+                            cutTapePriceList.add(new PriceBreaker(qty, price, null, pckging, priceBrkElement.child(2).childNode(1).childNode(0).childNode(0).outerHtml()));
                         }
                     } catch (Exception e) {
                         System.out.println(priceBrkElement);
@@ -174,7 +193,7 @@ public class MouserExtractor {
                 } else if (pkgType.equals(MOUSE_REEL)) {
                     continue;
                 } else {
-                    pkgType = CUT_TAPE;
+                    pkgType = pckging;
             }
 
         }
@@ -209,7 +228,7 @@ public class MouserExtractor {
         return priceBreakerList;
     }
 
-    private List<PriceBreaker> mouserPriceBreaker(String vendor) {
+    private List<PriceBreaker> mouserPriceBreaker(String vendor, String pckging) {
         List<PriceBreaker> priceBreakerList = new ArrayList<PriceBreaker>();
         if (document == null)
             return priceBreakerList;
@@ -257,16 +276,25 @@ public class MouserExtractor {
         List<PriceBreaker> reelPriceList = new ArrayList<PriceBreaker>();
         for (Element priceBrkElement:priceBreaks) {
             Integer qty;
-            Double price;
+            Double price = 0.0;
             if (priceBrkElement.toString().contains("PriceBreakQuantity")) {
+                if (pkgType.equals("")) {
+                    pkgType = pckging;
+                }
                 if (pkgType.equals(CUT_TAPE)) {
                     try {
                         String qtyStr = priceBrkElement.child(1).childNode(1).childNode(0).outerHtml().replace(",", "");
                         qty = Integer.parseInt(qtyStr);
 
                         String priceStr = priceBrkElement.child(2).childNode(1).childNode(0).outerHtml().replace("$", "");
-                        price = Double.parseDouble(priceStr);
-                        PriceBreaker priceBreaker = new PriceBreaker(qty, price, null, CUT_TAPE.replace(">", "").replace("<", ""), null);
+                        PriceBreaker priceBreaker;
+                        try {
+                            price = Double.parseDouble(priceStr);
+                            priceBreaker = new PriceBreaker(qty, price, null, CUT_TAPE.replace(">", "").replace("<", ""), null);
+                        } catch (NumberFormatException nfe) {
+                            priceBreaker = new PriceBreaker(qty, price, null, CUT_TAPE.replace(">", "").replace("<", ""), priceBrkElement.child(2).childNode(1).childNode(0).childNode(0).outerHtml());
+                        }
+
                         priceBreaker.setVendor(vendor);
                         cutTapePriceList.add(priceBreaker);
                     } catch (Exception e) {
@@ -278,10 +306,33 @@ public class MouserExtractor {
                         qty = Integer.parseInt(qtyStr);
 
                         String priceStr = priceBrkElement.child(2).childNode(1).childNode(0).outerHtml().replace("$", "");
-                        price = Double.parseDouble(priceStr);
-                        PriceBreaker priceBreaker = new PriceBreaker(qty, price, null, FULL_REEL.replace(">", "").replace("<", ""), null);
+                        PriceBreaker priceBreaker;
+                        try {
+                            price = Double.parseDouble(priceStr);
+                            priceBreaker = new PriceBreaker(qty, price, null, FULL_REEL.replace(">", "").replace("<", ""), null);
+                        } catch (NumberFormatException nfe) {
+                            priceBreaker = new PriceBreaker(qty, price, null, FULL_REEL.replace(">", "").replace("<", ""), priceBrkElement.child(2).childNode(1).childNode(0).childNode(0).outerHtml());
+                        }
                         priceBreaker.setVendor(vendor);
                         reelPriceList.add(priceBreaker);
+                    } catch (Exception e) {
+                        System.out.println(priceBrkElement);
+                    }
+                } else if (pkgType.equals(pckging)){
+                    try {
+                        String qtyStr = priceBrkElement.child(1).childNode(1).childNode(0).outerHtml().replace(",", "");
+                        qty = Integer.parseInt(qtyStr);
+
+                        String priceStr = priceBrkElement.child(2).childNode(1).childNode(0).outerHtml().replace("$", "");
+                        PriceBreaker priceBreaker;
+                        try {
+                            price = Double.parseDouble(priceStr);
+                            priceBreaker = new PriceBreaker(qty, price, null, pckging, null);
+                        } catch (NumberFormatException nfe) {
+                            priceBreaker = new PriceBreaker(qty, price, null, pckging, priceBrkElement.child(2).childNode(1).childNode(0).childNode(0).outerHtml());
+                        }
+                        priceBreaker.setVendor(vendor);
+                        cutTapePriceList.add(priceBreaker);
                     } catch (Exception e) {
                         System.out.println(priceBrkElement);
                     }
@@ -299,7 +350,7 @@ public class MouserExtractor {
                 pkgType = FULL_REEL;
                 continue;
             } else if (pkgType.equals(MOUSE_REEL)) {
-                continue;
+                pkgType = pckging;
             }
 
         }
@@ -445,7 +496,7 @@ public class MouserExtractor {
                 return new MouserProductInfo(Errors.PART_NOT_FOUND, url, partNum);
             }
             temp.setPartLink(url);
-            List<PriceBreaker> priceBreakers = mouserPriceBreaker(temp.getMfr());
+            List<PriceBreaker> priceBreakers = mouserPriceBreaker(temp.getMfr(), temp.getPkging());
             temp.setPriceBreakers(priceBreakers);
             mouserProductInfoList.add(temp);
         }

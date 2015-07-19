@@ -288,7 +288,9 @@ public class DigikeyProductInfo {
                     return nextPrice;
                 }
             }
-            return bestCutPrice;
+            PriceBreaker returnBreaker = bestCutPrice;
+            returnBreaker.setQty((returnBreaker.getQty() > totalQty)?returnBreaker.getQty():totalQty);
+            return returnBreaker;
         }
 
         while (remaining >= minReelQty) {
@@ -310,7 +312,7 @@ public class DigikeyProductInfo {
             if (remaining == null || cutPriceBreaker == null || cutPriceBreaker.getQty() == null) {
                 return cutPriceBreaker;
             }
-            if (cutPriceBreaker.getPkging().equals(PriceBreaker.CUT_TAPE)) {
+            if (!cutPriceBreaker.getPkging().equals(PriceBreaker.TAPE_AND_REEL)) {
                 if (cutPriceBreaker.getQty() == null && remaining >= cutPriceBreaker.getQty()) {
                     bestCutPrice = cutPriceBreaker;
                 }
@@ -321,7 +323,7 @@ public class DigikeyProductInfo {
         PriceBreaker betterCutPrice = bestCutPrice;
         if (bestCutPrice != null) {
             for (PriceBreaker cutPriceBreaker : priceBreakers) {
-                if (cutPriceBreaker.getPkging().equals(PriceBreaker.CUT_TAPE)) {
+                if (!cutPriceBreaker.getPkging().equals(PriceBreaker.TAPE_AND_REEL)) {
                     Integer temp = (betterCutPrice.getQty() > remaining) ? betterCutPrice.getQty() : remaining;
                     if (remaining < cutPriceBreaker.getQty()
                             && cutPriceBreaker.getExtendedPrice() < temp * bestCutPrice.getUnitPrice()
@@ -353,11 +355,11 @@ public class DigikeyProductInfo {
 
         String pkg = "";
         if (cutTapeTotalPrice > 0 && reelTotalQty > 0) {
-            pkg += PriceBreaker.CUT_TAPE;
+            pkg += this.packaging;
             pkg += "/" + PriceBreaker.TAPE_AND_REEL;
         } else {
             if (cutTapeTotalPrice > 0)
-                pkg += PriceBreaker.CUT_TAPE;
+                pkg += this.packaging;
 
             if (reelTotalQty > 0)
                 pkg += PriceBreaker.TAPE_AND_REEL;

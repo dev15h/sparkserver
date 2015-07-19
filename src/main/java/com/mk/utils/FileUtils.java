@@ -246,65 +246,90 @@ public class FileUtils {
                 cell.setCellValue(Integer.parseInt(excelRow.getTotalQty()));
 
                 cell = row.createCell(columnIndex++);
-                if (excelRow.getDigiPrice() == null)
+                if (excelRow.getDigiPrice() == null) {
+                    cell.setCellStyle(getRedHighLightCellStyle(workbook));
                     cell.setCellValue("N/A");
+                }
                 else {
                     if (excelRow.getBestPrice().equals(ExcelRow.DIGIKEY))
                         cell.setCellStyle(getGreenHighLightCellStyle(workbook));
                     try {
                         cell.setCellValue(Double.parseDouble(excelRow.getDigiPrice()));
                     } catch (Exception e) {
+                        cell.setCellStyle(getRedHighLightCellStyle(workbook));
                         cell.setCellValue(excelRow.getDigiPrice());
                     }
                 }
 
                 cell = row.createCell(columnIndex++);
-                if (excelRow.getDigiMinimumQty() == null)
+                if (excelRow.getDigiMinimumQty() == null) {
+                    cell.setCellStyle(getRedHighLightCellStyle(workbook));
                     cell.setCellValue("N/A");
+                }
                 else {
                     try {
                         cell.setCellValue(Integer.parseInt(excelRow.getDigiMinimumQty()));
                     } catch (Exception e) {
+                        cell.setCellStyle(getRedHighLightCellStyle(workbook));
                         cell.setCellValue(excelRow.getDigiMinimumQty());
                     }
                 }
 
                 cell = row.createCell(columnIndex++);
-                if (excelRow.isMouserNotFound() || excelRow.getMouserPrice() == null)
+                if (excelRow.isMouserNotFound() || excelRow.getMouserPrice() == null) {
+                    cell.setCellStyle(getRedHighLightCellStyle(workbook));
                     cell.setCellValue("");
+                }
                 else {
                     if (excelRow.getBestPrice().equals(ExcelRow.MOUSER))
                         cell.setCellStyle(getGreenHighLightCellStyle(workbook));
                     try {
                         cell.setCellValue(Double.parseDouble(excelRow.getMouserPrice()));
                     } catch (Exception e) {
+                        cell.setCellStyle(getRedHighLightCellStyle(workbook));
                         cell.setCellValue(excelRow.getMouserPrice());
                     }
                 }
 
                 cell = row.createCell(columnIndex++);
-                if (excelRow.isMouserNotFound())
+                if (excelRow.isMouserNotFound()) {
+                    cell.setCellStyle(getRedHighLightCellStyle(workbook));
                     cell.setCellValue("");
+                }
                 else {
                     try {
                         cell.setCellValue(Integer.parseInt(excelRow.getMouserMinimumQty()));
                     } catch (Exception e) {
+                        cell.setCellStyle(getRedHighLightCellStyle(workbook));
                         cell.setCellValue(excelRow.getMouserMinimumQty());
                     }
                 }
 
                 cell = row.createCell(columnIndex++);
+                Double totalPrice = excelRow.getTotalPrice();
+
+                if (totalPrice == 0)
+                    cell.setCellStyle(getRedHighLightCellStyle(workbook));
                 cell.setCellValue(excelRow.getTotalPrice());
 
                 cell = row.createCell(columnIndex++);
-                if (excelRow.getDigiStock() == null)
+                if (excelRow.getDigiStock() == null ) {
+                    cell.setCellStyle(getRedHighLightCellStyle(workbook));
                     cell.setCellValue("N/A");
-                else
-                    cell.setCellValue(Integer.parseInt(excelRow.getDigiStock()));
+                }
+                else if (Integer.parseInt(excelRow.getDigiStock()) == 0) {
+                    cell.setCellStyle(getRedHighLightCellStyle(workbook));
+                }
+                cell.setCellValue(Integer.parseInt(excelRow.getDigiStock()));
+
 
                 cell = row.createCell(columnIndex++);
-                if (excelRow.isMouserNotFound())
-                    cell.setCellValue("");
+                if (excelRow.isMouserNotFound()
+                        || excelRow.getMouserStock() == null
+                        || excelRow.getMouserStock().equals("0")) {
+                    cell.setCellStyle(getRedHighLightCellStyle(workbook));
+                    cell.setCellValue("N/A");
+                }
                 else
                     cell.setCellValue(Integer.parseInt(excelRow.getMouserStock()));
 
@@ -546,6 +571,13 @@ public class FileUtils {
         return cellStyle;
     }
 
+    private static CellStyle getRedHighLightCellStyle(Workbook workbook) {
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+        return cellStyle;
+    }
+
     private static CellStyle getPartNumLinkStyle(Workbook workbook, boolean error) {
         CellStyle linkStyle = workbook.createCellStyle();
         Font font = workbook.createFont();
@@ -580,7 +612,7 @@ public class FileUtils {
                     excelRow.setDigiPN(digikeyProductInfo.getPartNum());
                     excelRow.setDesc(digikeyProductInfo.getDesc());
                     excelRow.setMfr(digikeyProductInfo.getMfr());
-                    excelRow.setPckging(digiBestPrice.getPkging());
+                    excelRow.setDigiPckging(digiBestPrice.getPkging());
                     excelRow.setPckg(digikeyProductInfo.getPkgCase());
                     excelRow.setCategory(digikeyProductInfo.getCategory());
                     excelRow.setFamily(digikeyProductInfo.getFamily());
@@ -615,7 +647,7 @@ public class FileUtils {
                         mouserProductInfo.setBestPrice(mouserProductInfo.getQtyPrice(qty));
                         excelRow.setMouserMinimumQty((mouserBestPrice.getQty() != null) ? mouserBestPrice.getQty().toString() : mouserBestPrice.getErrorMessage());
                         excelRow.setMouserPrice((mouserBestPrice.getUnitPrice() != null && mouserBestPrice.getUnitPrice() != 0.0 && mouserBestPrice.getErrorMessage() == null) ? mouserBestPrice.getUnitPrice().toString() : mouserBestPrice.getErrorMessage());
-                        excelRow.setPckging(mouserBestPrice.getPkging());
+                        excelRow.setMouserPckging(mouserBestPrice.getPkging());
                     } else {
                         excelRow.setMouserPrice("");
                         excelRow.setMouserMinimumQty("");

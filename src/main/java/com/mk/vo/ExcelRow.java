@@ -31,6 +31,8 @@ public class ExcelRow {
     private String mouserLink;
     private String digikeyLink;
     private String bestPrice;
+    private String mouserPckging;
+    private String digiPckging;
 
     public static final String MOUSER = "MOUSER";
 
@@ -195,7 +197,45 @@ public class ExcelRow {
     }
 
     public String getPckging() {
-        return pckging;
+        Double mouserTotal;
+        Double digiTotal;
+
+        boolean noDigiPrice = false;
+        boolean noMouserPrice = false;
+        try {
+            if (digiPrice == null)
+                noDigiPrice = true;
+            else
+                Double.parseDouble(digiPrice);
+        } catch (NumberFormatException nfe) {
+            noDigiPrice = true;
+        }
+        try {
+            if (mouserPrice == null)
+                noMouserPrice = true;
+            else
+                Double.parseDouble(mouserPrice);
+        } catch (NumberFormatException nfe) {
+            noMouserPrice = true;
+        }
+
+        try {
+            if (mouserMinimumQty == null || noMouserPrice)
+                mouserTotal = 0.0;
+            else
+                mouserTotal = Double.parseDouble(mouserPrice) * Integer.parseInt(mouserMinimumQty);
+
+            if (digiMinimumQty == null || noDigiPrice)
+                digiTotal = 0.0;
+            else
+                digiTotal = Double.parseDouble(digiPrice) * Integer.parseInt(digiMinimumQty);
+        } catch (Exception e) {
+            return "";
+        }
+
+        if (mouserTotal == 0.0) return digiPckging;
+        if (digiTotal == 0.0) return mouserPckging;
+        return (digiTotal <= mouserTotal)?digiPckging:mouserPckging;
     }
 
     public void setPckging(String pckging) {
@@ -282,6 +322,22 @@ public class ExcelRow {
         this.digikeyLink = digikeyLink;
     }
 
+    public String getMouserPckging() {
+        return mouserPckging;
+    }
+
+    public void setMouserPckging(String mouserPckging) {
+        this.mouserPckging = mouserPckging;
+    }
+
+    public String getDigiPckging() {
+        return digiPckging;
+    }
+
+    public void setDigiPckging(String digiPckging) {
+        this.digiPckging = digiPckging;
+    }
+
     public String getBestPrice() {
         Double mouserTotal;
         Double digiTotal;
@@ -321,7 +377,7 @@ public class ExcelRow {
 
         if (mouserTotal == 0.0) return DIGIKEY;
         if (digiTotal == 0.0) return MOUSER;
-        return (digiTotal < mouserTotal)?DIGIKEY:MOUSER;
+        return (digiTotal <= mouserTotal)?DIGIKEY:MOUSER;
     }
 
     public void setBestPrice(String bestPrice) {

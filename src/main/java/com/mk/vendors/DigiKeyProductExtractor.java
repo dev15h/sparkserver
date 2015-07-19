@@ -191,7 +191,7 @@ public class DigiKeyProductExtractor {
             }
 
             String comparePkg = packaging.toLowerCase();
-            if (comparePkg.equals("") || comparePkg.contains("cut") && comparePkg.contains("tape")) {
+            if (comparePkg.contains("cut") && comparePkg.contains("tape")) {
                 packaging = PriceBreaker.CUT_TAPE;
             } else if (comparePkg.contains("tape") && comparePkg.contains("reel")) {
                 packaging = PriceBreaker.TAPE_AND_REEL;
@@ -199,8 +199,8 @@ public class DigiKeyProductExtractor {
                 packaging = PriceBreaker.BULK;
             } else if (comparePkg.contains("tube")) {
                 packaging = PriceBreaker.TUBE;
-            } else {
-                return priceBreakers;
+            } else if (!comparePkg.equals("")){
+                // do nothing;
             }
 
             PriceBreaker priceBreaker = new PriceBreaker(qty, unitPrice, extdPrice, packaging, error);
