@@ -28,9 +28,9 @@ public class Controller {
             public Object handle(Request request, Response response) {
 
                 //TEMP. REMOVE IN FINAL VERSION
-                if (new Date().getYear() != 2015 && new Date().getMonth() > 8){
-                    return "";
-                }
+                //if (new Date().getYear() != 2015 && new Date().getMonth() > 8){
+                //    return "";
+                //}
 
                 String tsvData = request.queryMap("selection").value();
                 String lines[] = tsvData.split("\n");
